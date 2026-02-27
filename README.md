@@ -3,6 +3,7 @@
 ![Version](https://img.shields.io/badge/version-v0.5_beta-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-yellow)](https://buymeacoffee.com/poha)
 
 TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역하고 교정하는 도구입니다. 최신 Gemini AI를 활용하여 높은 품질의 번역과 이미지 글자 제거 기능을 제공합니다.
 
@@ -31,6 +32,7 @@ TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽
 - **제작자**: 포하
 - **이메일**: kapoha.dev@gmail.com
 - **커뮤니티**: [팬비닛 (치지직)](https://fanbinit.us/)
+- **후원**: [Buy Me a Coffee ☕](https://buymeacoffee.com/poha)
 
 ## ⚠️ 저작권 주의사항 (Copyright Warning)
 
