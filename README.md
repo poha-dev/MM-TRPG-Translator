@@ -4,12 +4,12 @@
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
-일본어 TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역하고 교정하는 도구입니다. 최신 Gemini AI를 활용하여 높은 품질의 번역과 이미지 글자 제거 기능을 제공합니다.
+TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역하고 교정하는 도구입니다. 최신 Gemini AI를 활용하여 높은 품질의 번역과 이미지 글자 제거 기능을 제공합니다.
 
 ## ✨ 주요 기능
 
 - **자연스러운 번역 (v0.1~v0.4)**: Gemini AI를 사용하여 문맥에 맞는 매끄러운 한국어 번역 제공.
-- **이미지 글자 제거 (v0.5 beta)**: 배경을 손상시키지 않고 이미지 내 일어/영문 글자만 깔끔하게 제거.
+- **이미지 글자 제거 (v0.5 beta)**: 배경을 손상시키지 않고 이미지 내 외국어 글자만 깔끔하게 제거.
 - **용어집 관리**: 고유명사 자동 추출 및 사용자 지정 사전 적용 가능.
 - **DOCX 서식 보존**: 워드 문서 출력 시 원본의 색상과 폰트 스타일 최대한 유지.
 - **PDF 이미지 선택**: 필요한 페이지만 골라서 번역 가능.
@@ -20,7 +20,7 @@
 
 ## 🚀 시작하기
 
-1. **[Releases](https://github.com/USER_NAME/REPO_NAME/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.5.exe`)을 다운로드합니다.
+1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.5.exe`)을 다운로드합니다.
 2. 프로그램을 실행하고 **설정/정보** 탭에서 [Google Gemini API Key](https://aistudio.google.com/app/apikey)를 입력합니다.
 3. 원하는 탭(1차 번역, 2차 교정, 이미지 글자 제거)을 선택하여 작업을 시작하세요.
 
