@@ -30,7 +30,7 @@ TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽
 ## 🛠 제작 및 문의
 - **제작자**: 포하
 - **이메일**: kapoha.dev@gmail.com
-- **커뮤니티**: [팬비닛 (치지직)](https://fanbinit.us/)
+- **커뮤니티**: [팬비닛](https://fanbinit.us/) "포하" 에게 쪽지 보내주시면 됩니다!
 
 ## ⚠️ 저작권 주의사항 (Copyright Warning)
 
