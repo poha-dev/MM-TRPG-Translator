@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Build/Dist
+build/
+dist/
+*.spec
+
+# Application data
+output/
+output2/
+image_output/
+*.log
+settings.json
+auto_glossary.txt
+
+# IDE
+.vscode/
+.idea/

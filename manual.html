@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRPG Translator User Manual</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', 'NanumBarunGothic', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #e67e22;
+            margin-top: 25px;
+        }
+
+        h3 {
+            color: #16a085;
+        }
+
+        code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: consolas;
+        }
+
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .img-caption {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: -5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>TRPG/Murder Mystery Translator 사용 설명서</h1>
+
+        <p>환영합니다! 이 프로그램은 일본어 TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역하고 교정하는 도구입니다.</p>
+
+        <h2>1. 시작하기 (Settings)</h2>
+        <ol>
+            <li><strong>API Key 입력</strong>: Google Gemini API Key를 입력하세요. (최초 1회 저장 필요)</li>
+            <li><strong>Model Name</strong>: 기본값은 <code>gemini-3-flash-preview</code>입니다. 필요 시 변경 가능합니다.</li>
+            <div class="note" style="margin-left: 20px; font-size: 0.9em;">
+                다른 모델 리스트는 <a href="https://ai.google.dev/gemini-api/docs/models?hl=ko" target="_blank">Google AI 공식
+                    문서</a>에서 확인하실 수 있습니다.
+            </div>
+            <li><strong>버전 정보 확인</strong>: '버전 정보' 버튼을 클릭하면 <strong>v0.5</strong>까지의 최신 패치 노트를 확인할 수 있습니다.</li>
+        </ol>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_00_settings.png" alt="설정 탭 예시">
+            <p class="img-caption">[그림 1] 설정 탭 및 패치 노트 화면</p>
+        </div>
+
+        <h2>2. 1차 번역 (Translation)</h2>
+        <p>일본어 원문 텍스트 파일이나 이미지를 번역합니다. v0.4부터는 워드 문서 출력 및 자동 용어 추출 기능이 강화되었습니다.</p>
+        <ul>
+            <li><strong>텍스트 폴더</strong>: <code>.pdf</code>, <code>.txt</code> 파일들이 들어있는 폴더를 선택하세요.</li>
+            <li><strong>이미지 폴더</strong>: <code>.png</code>, <code>.jpg</code> 이미지가 있는 폴더를 선택하세요. (OCR 번역)</li>
+            <li><strong>용어집 추출 (New v0.4)</strong>: 번역 시작 전 이 버튼을 누르면 AI가 시나리오 전체를 스캔하여 주요 인명, 지명 등을 <code>원문:역문</code>
+                형태로 자동 추출합니다. 추출된 내용은 <code>auto_glossary.txt</code>로 저장되며 자동으로 용어집 경로에 설정됩니다.</li>
+            <li><strong>용어집 (Glossary)</strong>: 추출된 사전이나 직접 만든 사전 파일을 등록하면 번역 시 해당 용어가 우선 적용됩니다.</li>
+            <li><strong>DOCX 출력 활성화</strong>: 체크 시 HTML 결과물 외에도 워드 문서(<code>.docx</code>)가 생성됩니다. <br>
+                <span style="color: #e74c3c; font-weight: bold;">(※ 원본의 글자 색상을 보존하려면 반드시 DOCX 출력을 사용해야 합니다.)</span>
+            </li>
+            <li><strong>폰트 설정</strong>: DOCX 문서에 적용할 폰트를 직접 입력하거나 선택할 수 있습니다. (기본값: 바탕)</li>
+        </ul>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_03_1st.png" alt="1차 번역 탭 예시">
+            <p class="img-caption">[그림 2] 1차 번역 상세 설정 및 용어집 추출 화면</p>
+        </div>
+
+        <h2>3. PDF 이미지 선택 기능 (v0.3)</h2>
+        <p>PDF 파일을 번역할 때, 필요한 이미지만 선택하여 번역 시간을 단축하고 결과물을 깔끔하게 만들 수 있습니다.</p>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_01_selection_dialog.png" alt="이미지 선택 팝업 예시">
+            <p class="img-caption">[그림 3] 이미지 선택 팝업 화면</p>
+        </div>
+
+        <h2>4. 2차 교정 (Correction)</h2>
+        <p>번역된 결과물을 AI가 다시 한번 검토하여 맞춤법과 문맥을 자연스럽게 다듬습니다.</p>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_04_2nd.png" alt="2차 교정 탭 예시">
+            <p class="img-caption">[그림 4] 2차 교정 작업 화면</p>
+        </div>
+
+        <h2>5. 이미지 글자 제거 (beta) (New v0.5)</h2>
+        <p>AI를 이용하여 이미지의 배경을 보존하면서 글자만 깔끔하게 제거합니다. 타이틀 로고 제거나 배경 이미지 정리에 유용합니다.</p>
+        <ul>
+            <li><strong>지시 사항</strong>: 기본값 외에도 "캐릭터 얼굴은 건드리지 마" 등 구체적인 명령이 가능합니다.</li>
+            <li><strong>한 장 미리보기</strong>: 실제 처리를 시작하기 전, 결과를 미리 비교해 볼 수 있습니다.</li>
+            <li><strong>알파 채널 유지</strong>: 체크 시 투명 배경(PNG)이 포함된 이미지의 투명도를 그대로 보존합니다.</li>
+        </ul>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_05_cleaner_tab.png" alt="이미지 클리너 탭">
+            <p class="img-caption">[그림 5] 이미지 글자 제거(beta) 탭 화면</p>
+        </div>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_06_cleaner_preview.png" alt="클리너 미리보기">
+            <p class="img-caption">[그림 6] 이미지 제거 전/후 미리보기 비교</p>
+        </div>
+
+        <h2>6. 기타 편의 기능 (v0.4)</h2>
+        <ul>
+            <li><strong>DOCX 출력 상세</strong>: 번역된 텍스트를 워드 파일로 생성하며, 원본의 <strong>글씨 색상과 폰트 스타일</strong>을 최대한 보존하여 가독성을
+                높였습니다.</li>
+            <li><strong>폴더 구조 보존</strong>: 입력 폴더 안에 여러 서브 폴더가 있어도, 출력 폴더에 동일한 계층 구조로 결과물을 깔끔하게 정리해줍니다.</li>
+        </ul>
+
+        <div style="text-align: center;">
+            <img src="manual_images/img_07_docx_result.png" alt="DOCX 결과 예시">
+            <p class="img-caption">[그림 7] DOCX 출력 결과물 예시 (글씨 색상 및 스타일 보존)</p>
+        </div>
+
+        <div class="note">
+            <strong>Tip:</strong> <code>output</code> 폴더 내 결과물은 웹브라우저나 워드 프로세서로 열어 확인할 수 있습니다.
+        </div>
+
+        <p style="text-align: center; color: #888; margin-top: 50px;">제작자 : 포하 (v0.5)</p>
+    </div>
+</body>
+
+</html>
