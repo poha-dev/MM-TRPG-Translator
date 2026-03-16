@@ -59,13 +59,13 @@ python main.py
 
 ## 📄 License
 
-This project is licensed under the **CC BY-NC 4.0** (Creative Commons Attribution-NonCommercial 4.0 International).
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 - ✅ 자유롭게 사용, 수정, 배포 가능
-- ✅ 출처(포하) 표기 필수
-- ❌ 상업적 이용 금지
+- ✅ 수정 시 동일 라이선스(GPL-3.0) 적용 필수
+- ✅ 소스 코드 공개 의무
 
-[![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Copyright (c) 2026 포하
 
