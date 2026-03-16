@@ -1,0 +1,12 @@
+{
+    "api_key": "YOUR_GEMINI_API_KEY_HERE",
+    "model_name": "gemini-3-flash-preview",
+    "ccfolia_src_dir": "",
+    "ccfolia_trans_dir": "",
+    "ccfolia_output_dir": "",
+    "ccfolia_match_mode": "manual",
+    "ccfolia_make_zip": true,
+    "ccfolia_api_match": false,
+    "ccfolia_api_match_model": "gemini-3.1-flash-lite-preview",
+    "presets": []
+}
