@@ -59,11 +59,13 @@ python main.py
 
 ## 📄 License
 
-This project is licensed under the **MIT License + Commons Clause**.
+This project is licensed under the **CC BY-NC 4.0** (Creative Commons Attribution-NonCommercial 4.0 International).
 
 - ✅ 자유롭게 사용, 수정, 배포 가능
 - ✅ 출처(포하) 표기 필수
-- ❌ 상업적 판매 및 서비스화 금지
+- ❌ 상업적 이용 금지
+
+[![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 Copyright (c) 2026 포하
 
