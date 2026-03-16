@@ -1,0 +1,22 @@
+# TRPG / Murder Mystery Translator — 핵심 의존 패키지
+# 설치: pip install -r requirements.txt
+
+# Google Gemini API (번역·이미지 처리)
+google-generativeai==0.8.6
+
+# 이미지 처리
+pillow==12.1.0
+
+# PDF 처리
+PyMuPDF==1.26.7
+pypdf==6.7.1
+
+# DOCX 출력
+python-docx==1.2.0
+lxml==6.0.2
+
+# 환경변수 (.env)
+python-dotenv==1.2.1
+
+# 기타 유틸
+tqdm==4.67.3

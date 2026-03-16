@@ -1,0 +1,49 @@
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# ── Build / Distribution ────────────────────────────────
+build/
+dist/
+*.spec
+Release_*/
+
+# ── Application data (user-specific, not for repo) ──────
+# API key + local paths — settings.json.example 을 복사해서 사용
+settings.json
+output/
+output2/
+image_input/
+image_output/
+*.log
+auto_glossary.txt
+*.zip
+
+# ── ccfolia work folders ─────────────────────────────────
+cc_원본/
+cc_번역/
+cc_출력/
+
+# ── Test / Debug files ───────────────────────────────────
+test_*.py
+debug_*.py
+test_input.txt
+test_doc.docx
+test_font.docx
+result.txt
+inputs/
+앞으로\ 할거.txt
+
+# ── Utility / Temporary ──────────────────────────────────
+# 아이콘 변환용 1회성 스크립트
+convert_icon.py
+# 루트의 임시 이미지 파일
+image.png
+
+# ── IDE / Editor ─────────────────────────────────────────
+.vscode/
+.idea/
+.claude/
