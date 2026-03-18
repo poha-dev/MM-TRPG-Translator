@@ -75,7 +75,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 - ✅ 자유롭게 사용, 수정, 배포 가능
 - ✅ 수정 시 동일 라이선스(GPL-3.0) 적용 필수
 - ✅ 소스 코드 공개 의무
-- ✅ 배포 또는 공개 시 원작자(**포하**, poha-dev) 표기 필수
+- ✅ 배포 또는 공개 시 원작자(포하) 표기 필수
 
 Copyright (c) 2026 포하
 
