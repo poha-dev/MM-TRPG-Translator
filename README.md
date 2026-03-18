@@ -1,8 +1,12 @@
 # TRPG / Murder Mystery Translator (v0.7)
 
+![Version](https://img.shields.io/badge/version-v0.7-blue)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-yellow)](https://buymeacoffee.com/poha)
+
 일본어 TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역·교정하고,
-코코포리아(CoCoFolio) 룸 이미지를 번역본으로 교체하는 통합 도구입니다.
-Google Gemini AI를 활용합니다.
+코코포리아(CoCoFolio) 룸 이미지를 번역본으로 교체하는 통합 도구입니다. Google Gemini AI를 활용합니다.
 
 ## ✨ 주요 기능
 
@@ -18,16 +22,20 @@ Google Gemini AI를 활용합니다.
 ## 📸 스크린샷
 
 ![이미지 글자 제거 예시](manual_images/img_06_cleaner_preview.png)
-*이미지 글자 제거 전/후 비교 (v0.5)*
+*(v0.5 이미지 글자 제거(preview) 기능을 통한 일어 텍스트 제거 예시)*
 
 ## 🚀 시작하기
 
-1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전 실행 파일(`MM_TRPG_Translator_vX.X.exe`)을 다운로드합니다.
+1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.7.exe`)을 다운로드합니다.
 2. 프로그램을 실행하고 **설정/정보** 탭에서 [Google Gemini API Key](https://aistudio.google.com/app/apikey)를 입력합니다.
-3. 원하는 탭을 선택해 작업을 시작하세요.
+3. 원하는 탭(1차 번역, 2차 교정, 이미지 글자 제거, 코코포리아 룸 셋팅)을 선택하여 작업을 시작하세요.
 
 > **기본 모델**: `gemini-3-flash-preview`
 > 다른 모델은 [Google AI 공식 문서](https://ai.google.dev/gemini-api/docs/models?hl=ko)에서 확인하세요.
+
+## 📖 사용 설명서
+
+상세한 사용법은 실행 파일과 함께 제공되는 `manual.html`을 참고해 주세요.
 
 ## 🔧 개발 환경 설정
 
@@ -46,16 +54,19 @@ cp settings.json.example settings.json
 python main.py
 ```
 
-## 📖 사용 설명서
+## 🛠 제작 및 문의
 
-상세한 사용법은 `manual.html`을 브라우저로 열어 확인하세요.
+- **제작자**: 포하
+- **이메일**: kapoha.dev@gmail.com
+- **커뮤니티**: [팬비닛 (치지직)](https://fanbinit.us/)
+- **후원**: [Buy Me a Coffee ☕](https://buymeacoffee.com/poha)
 
-## ⚠️ 저작권 주의사항
+## ⚠️ 저작권 주의사항 (Copyright Warning)
 
 - 본 프로그램은 번역 및 이미지 처리를 돕는 **자동화 도구**입니다.
-- 번역 대상 시나리오·텍스트·이미지의 저작권은 **원작자**에게 있습니다.
-- 번역물 배포 시 저작권법을 준수하세요. 이를 위반하여 발생하는 모든 법적 책임은 **사용자 본인**에게 있습니다.
-- 원작자 허가 없는 상업적 이용 및 무단 배포는 금지됩니다.
+- 번역 대상이 되는 시나리오, 텍스트, 이미지의 저작권은 **원작자(라이선스 보유자)**에게 있습니다.
+- 사용자는 해당 저작물을 번역하고 배포함에 있어 저작권법을 준수해야 하며, 이를 위배하여 발생하는 모든 법적 책임은 **사용자 본인**에게 있습니다.
+- 원작자의 허가 없는 상업적 이용이나 무단 배포는 금지됩니다.
 
 ## 📄 License
 
@@ -65,14 +76,8 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 - ✅ 수정 시 동일 라이선스(GPL-3.0) 적용 필수
 - ✅ 소스 코드 공개 의무
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
 Copyright (c) 2026 포하
 
 ---
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/poha)
-
-## 크레딧
-
-개발 과정에서 [Claude](https://claude.ai) (Anthropic)의 도움을 받았습니다.
+> 🤖 이 프로젝트는 [Claude](https://claude.ai) (Anthropic)의 도움을 받아 개발되었습니다.

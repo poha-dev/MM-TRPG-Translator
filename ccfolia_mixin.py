@@ -223,8 +223,9 @@ class CcfoliaMixin:
             event = threading.Event()
 
             if match_mode == "auto":
-                matched = {f: os.path.join(trans_dir, f)
-                           for f in trans_files if f in src_files_set}
+                src_stem_map = {os.path.splitext(f)[0]: f for f in src_files}
+                matched = {src_stem_map[os.path.splitext(f)[0]]: os.path.join(trans_dir, f)
+                           for f in trans_files if os.path.splitext(f)[0] in src_stem_map}
                 if not matched:
                     self.log("오류: 파일명이 일치하는 이미지가 없습니다.\n"
                              "수동 매핑 모드를 사용하거나 번역본 파일명을 원본과 동일하게 변경해주세요.")
