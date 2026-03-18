@@ -9,6 +9,7 @@ venv/
 build/
 dist/
 *.spec
+*.exe
 Release_*/
 
 # ── Application data (user-specific, not for repo) ──────
