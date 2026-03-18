@@ -110,5 +110,18 @@ WILL ANY COPYRIGHT HOLDER BE LIABLE TO YOU FOR DAMAGES.
 
                      END OF TERMS AND CONDITIONS
 
+                  ADDITIONAL TERMS (per Section 7)
+
+Attribution Requirement:
+Any distribution or public display of this software, or derivative works
+based on it, must include a clear and visible credit to the original author:
+
+    Original Author: 포하 (poha-dev)
+    Source: https://github.com/poha-dev/MM-TRPG-Translator
+
+This credit must appear in:
+  - The application's About screen, documentation, or README, AND
+  - Any release page, distribution page, or public announcement.
+
 For the full license text, visit:
 https://www.gnu.org/licenses/gpl-3.0.html
