@@ -58,7 +58,6 @@ python main.py
 
 - **제작자**: 포하
 - **이메일**: kapoha.dev@gmail.com
-- **커뮤니티**: [팬비닛 (치지직)](https://fanbinit.us/)
 - **후원**: [Buy Me a Coffee ☕](https://buymeacoffee.com/poha)
 
 ## ⚠️ 저작권 주의사항 (Copyright Warning)
