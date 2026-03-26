@@ -110,7 +110,20 @@ class CcfoliaMixin:
             opt_lf,
             text="ZIP으로 출력  —  출력 폴더를 .zip 파일로 압축 (코코포리아 업로드용)",
             variable=self.ccfolia_make_zip
-        ).pack(anchor="w", padx=10, pady=6)
+        ).pack(anchor="w", padx=10, pady=(6, 2))
+
+        tk.Checkbutton(
+            opt_lf,
+            text="memo 필드 번역  —  __data.json의 memo 필드를 AI로 번역 (설정 탭 API 키 사용)",
+            variable=self.ccfolia_translate_memo
+        ).pack(anchor="w", padx=10, pady=(2, 4))
+
+        glossary_row = tk.Frame(opt_lf)
+        glossary_row.pack(anchor="w", padx=28, pady=(0, 6), fill="x")
+        tk.Label(glossary_row, text="단어 사전 파일:", width=14, anchor="w").pack(side="left")
+        tk.Entry(glossary_row, textvariable=self.ccfolia_glossary_file, width=38).pack(side="left", padx=(0, 4))
+        tk.Button(glossary_row, text="파일 선택",
+                  command=lambda: self.browse_file(self.ccfolia_glossary_file)).pack(side="left")
 
         btn_frame = tk.Frame(parent)
         btn_frame.pack(fill="x", padx=10, pady=10)
@@ -174,6 +187,23 @@ class CcfoliaMixin:
 
         api_match = self.ccfolia_api_match.get()
         api_match_model = self.ccfolia_api_match_model.get().strip() or "gemini-3.1-flash-lite-preview"
+        translate_memo = self.ccfolia_translate_memo.get()
+        glossary_file = self.ccfolia_glossary_file.get().strip()
+
+        # memo 번역 사용 시 AI 초기화
+        if translate_memo:
+            api_key = self.settings.get("api_key", "")
+            model_name = self.settings.get("model_name", "")
+            if not api_key or not model_name:
+                messagebox.showwarning("경고", "memo 번역을 사용하려면 설정 탭에서 API 키와 모델명을 저장해주세요.")
+                return
+            from translator import configure_genai
+            glossary = self.load_glossary_from_file(glossary_file)
+            success, msg = configure_genai(api_key, model_name, glossary=glossary)
+            self.log(f"AI 초기화: {msg}")
+            if not success:
+                messagebox.showerror("오류", f"AI 초기화 실패: {msg}")
+                return
 
         from config import save_settings
         save_settings(
@@ -185,7 +215,9 @@ class CcfoliaMixin:
             ccfolia_match_mode=mode,
             ccfolia_make_zip=make_zip,
             ccfolia_api_match=api_match,
-            ccfolia_api_match_model=api_match_model
+            ccfolia_api_match_model=api_match_model,
+            ccfolia_translate_memo=translate_memo,
+            ccfolia_glossary_file=glossary_file,
         )
         self.settings["ccfolia_src_dir"] = src
         self.settings["ccfolia_trans_dir"] = trans
@@ -198,14 +230,14 @@ class CcfoliaMixin:
 
         thread = threading.Thread(
             target=self._run_ccfolia_replace,
-            args=(src, trans, out, make_zip, mode, api_match, api_match_model),
+            args=(src, trans, out, make_zip, mode, api_match, api_match_model, translate_memo),
             daemon=True
         )
         thread.start()
 
     # ── 핵심 처리 로직 (백그라운드 스레드) ───────────────────────────
 
-    def _run_ccfolia_replace(self, src_dir, trans_dir, output_dir, make_zip, match_mode, api_match=False, api_match_model="gemini-3.1-flash-lite-preview"):
+    def _run_ccfolia_replace(self, src_dir, trans_dir, output_dir, make_zip, match_mode, api_match=False, api_match_model="gemini-3.1-flash-lite-preview", translate_memo=False):
         """백그라운드 스레드에서 실행: 이미지 매핑 수집 → 해시 계산 → __data.json 치환 → 파일 복사 → ZIP 생성."""
         try:
             img_exts = ('.png', '.jpg', '.jpeg')
@@ -251,10 +283,16 @@ class CcfoliaMixin:
                 self.log("취소됨.")
                 return
 
-            # ── __data.json 로드 (raw string) ─────────────────────────
+            # ── __data.json 로드 ───────────────────────────────────────
             data_json_path = os.path.join(src_dir, "__data.json")
             with open(data_json_path, encoding="utf-8") as f:
                 json_raw = f.read()
+
+            # ── memo 필드 번역 ─────────────────────────────────────────
+            if translate_memo:
+                data_obj = json.loads(json_raw)
+                self._translate_memo_fields(data_obj)
+                json_raw = json.dumps(data_obj, ensure_ascii=False)
 
             # 교체 맵 생성: 원본 파일명(해시)→(새 해시, 번역본 경로, 확장자)
             # 코코포리아의 파일명은 확장자를 제외한 부분이 SHA-256 다이제스트이므로
@@ -307,6 +345,86 @@ class CcfoliaMixin:
             self.log(f"오류: {e}\n{traceback.format_exc()}")
         finally:
             self.root.after(0, lambda: self.ccfolia_start_btn.config(state="normal"))
+
+    # ── memo 번역 ──────────────────────────────────────────────────────
+
+    def _collect_memo_refs(self, obj, refs):
+        """재귀적으로 dict/list를 탐색해 memo 키의 (부모객체, 키) 참조를 수집한다."""
+        if isinstance(obj, dict):
+            for key, val in obj.items():
+                if key == "memo" and isinstance(val, str) and val.strip():
+                    refs.append((obj, key))
+                else:
+                    self._collect_memo_refs(val, refs)
+        elif isinstance(obj, list):
+            for item in obj:
+                self._collect_memo_refs(item, refs)
+
+    @staticmethod
+    def _needs_translation(text: str) -> bool:
+        """일본어/한자 문자가 포함된 경우에만 True 반환. 기호·영숫자만 있는 항목은 건너뛴다."""
+        for ch in text:
+            cp = ord(ch)
+            if (0x3040 <= cp <= 0x309F or   # 히라가나
+                    0x30A0 <= cp <= 0x30FF or   # 가타카나
+                    0x4E00 <= cp <= 0x9FFF or   # CJK 한자 (일본어 kanji 포함)
+                    0xFF65 <= cp <= 0xFF9F):     # 반각 가타카나
+                return True
+        return False
+
+    def _translate_memo_fields(self, data_obj):
+        """__data.json 파싱 결과에서 memo 필드를 찾아 중복 제거 후 AI 번역한다."""
+        from translator import translate_content
+
+        refs = []
+        self._collect_memo_refs(data_obj, refs)
+
+        if not refs:
+            self.log("  memo 필드 없음, 건너뜀.")
+            return
+
+        # 중복 제거
+        unique_vals = {}
+        for obj, key in refs:
+            val = obj[key]
+            if val not in unique_vals:
+                unique_vals[val] = None
+
+        total = len(unique_vals)
+        self.log(f"  memo 번역 시작: {total}개 고유 값")
+
+        for idx, orig in enumerate(list(unique_vals.keys()), 1):
+            preview = orig[:40].replace("\n", " ") + ("..." if len(orig) > 40 else "")
+
+            if not self._needs_translation(orig):
+                self.log(f"  [{idx}/{total}] 건너뜀 (번역 불필요): {preview}")
+                unique_vals[orig] = orig
+                continue
+
+            self.log(f"  [{idx}/{total}] {preview}")
+            try:
+                result = translate_content(orig, 'text', log_fn=self.log)
+            except Exception as e:
+                self.log(f"  memo 번역 중단 (예외): {e}")
+                return
+            if not isinstance(result, str) or not result.strip():
+                self.log(f"  [{idx}/{total}] 빈 결과 — 원본 유지")
+                unique_vals[orig] = orig
+                continue
+            if result.startswith("번역 중 오류 발생:") or result.startswith("번역 실패:"):
+                self.log(f"  memo 번역 중단: {result}")
+                return
+            result_preview = result[:40].replace("\n", " ") + ("..." if len(result) > 40 else "")
+            self.log(f"    → {result_preview}")
+            unique_vals[orig] = result
+
+        # 번역 결과 적용
+        for obj, key in refs:
+            translated = unique_vals.get(obj[key])
+            if translated:
+                obj[key] = translated
+
+        self.log(f"  memo 번역 완료: {len(unique_vals)}개")
 
     # ── 다이얼로그 헬퍼 (메인 스레드에서 호출) ────────────────────────
 

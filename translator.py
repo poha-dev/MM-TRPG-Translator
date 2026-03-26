@@ -6,6 +6,7 @@ translator.py — Gemini API 클라이언트 설정, 번역/교열/용어집 추
 import google.generativeai as genai
 import config  # 전역 프롬프트/설정 접근을 위해 모듈 자체를 임포트
 import time
+import datetime
 import json
 import io
 from PIL import Image
@@ -15,6 +16,21 @@ model = None
 refine_model = None
 image_cleaner_model = None
 
+# 컨텍스트 캐시 인스턴스 — 번역 시작 시 생성, 다음 번역 전 교체된다.
+_cached_content = None
+
+
+def _cleanup_cache():
+    """기존 컨텍스트 캐시를 삭제한다. 실패해도 무시한다."""
+    global _cached_content
+    if _cached_content is not None:
+        try:
+            _cached_content.delete()
+        except Exception:
+            pass
+        _cached_content = None
+
+
 def configure_genai(api_key, model_name, glossary=None, cleaner_api_key=None, cleaner_model_name=None):
     """Gemini 클라이언트를 초기화한다.
 
@@ -23,61 +39,77 @@ def configure_genai(api_key, model_name, glossary=None, cleaner_api_key=None, cl
     모든 안전 필터는 TRPG 시나리오 번역 특성상 BLOCK_NONE으로 설정한다.
     반환값: (success: bool, message: str)
     """
-    global model, refine_model, image_cleaner_model
-    
+    global model, refine_model, image_cleaner_model, _cached_content
+
     if not api_key:
         return False, "API Key is missing."
 
     try:
         genai.configure(api_key=api_key)
-        
+
         # Update prompts dynamically with glossary if provided
         prompts = config.update_system_prompt(config.TRANSLATION_RULES, glossary)
-        
-        # Initialize Translation Model
-        model = genai.GenerativeModel(
-            model_name=model_name,
-            system_instruction=prompts["system_prompt"],
-            generation_config=genai.types.GenerationConfig(temperature=0.0),
-            safety_settings={
-                'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
-                'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
-                'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
-                'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE'
-            }
-        )
 
-        # Initialize Refine Model
+        # 기존 캐시 정리 (새 번역 세션 시작마다 갱신)
+        _cleanup_cache()
+
+        _SAFETY = {
+            'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
+            'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
+            'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+            'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE',
+        }
+        _GEN_CFG = genai.types.GenerationConfig(temperature=0.0)
+
+        # ── 번역 모델: Context Caching 시도 → 실패 시 일반 모드 폴백 ────────
+        cache_status = "일반 모드"
+        try:
+            from google.generativeai import caching as _gc
+            cache_model = model_name if model_name.startswith("models/") else f"models/{model_name}"
+            _cached_content = _gc.CachedContent.create(
+                model=cache_model,
+                display_name="trpg_translation_system_prompt",
+                system_instruction=prompts["system_prompt"],
+                ttl=datetime.timedelta(hours=2),
+            )
+            model = genai.GenerativeModel.from_cached_content(
+                cached_content=_cached_content,
+                generation_config=_GEN_CFG,
+                safety_settings=_SAFETY,
+            )
+            cache_status = "캐시 활성 ✓"
+        except Exception as cache_err:
+            _cleanup_cache()
+            print(f"[캐싱] 컨텍스트 캐싱 불가 → 일반 모드: {cache_err}")
+            model = genai.GenerativeModel(
+                model_name=model_name,
+                system_instruction=prompts["system_prompt"],
+                generation_config=_GEN_CFG,
+                safety_settings=_SAFETY,
+            )
+
+        # ── 교열 모델 ────────────────────────────────────────────────────────
         refine_model = genai.GenerativeModel(
             model_name=model_name,
             system_instruction=prompts["refine_system_prompt"],
-            generation_config=genai.types.GenerationConfig(temperature=0.0),
-            safety_settings={
-                'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
-                'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
-                'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
-                'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE'
-            }
+            generation_config=_GEN_CFG,
+            safety_settings=_SAFETY,
         )
 
-        # Initialize Image Cleaner Model if provided
+        # ── 이미지 클리너 모델 ───────────────────────────────────────────────
         if cleaner_api_key and cleaner_model_name:
-            # We assume current configuration handles the primary API key.
-            # If they are different, we might need a separate configuration call if the SDK allows.
-            # However, usually users use the same or we re-configure for that call.
-            # For now, let's keep it simple.
             image_cleaner_model = genai.GenerativeModel(
                 model_name=cleaner_model_name,
-                generation_config=genai.types.GenerationConfig(temperature=0.0),
+                generation_config=_GEN_CFG,
                 safety_settings={
                     'HARM_CATEGORY_HARASSMENT': 'OFF',
                     'HARM_CATEGORY_HATE_SPEECH': 'OFF',
                     'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'OFF',
-                    'HARM_CATEGORY_DANGEROUS_CONTENT': 'OFF'
-                }
+                    'HARM_CATEGORY_DANGEROUS_CONTENT': 'OFF',
+                },
             )
 
-        return True, "Configured successfully."
+        return True, f"Configured successfully. [{cache_status}]"
     except Exception as e:
         return False, str(e)
 
@@ -214,11 +246,29 @@ def _tsv_to_table(tsv_text, original_rows, original_cols):
         result.append([""] * original_cols)
     return result[:original_rows]
 
-def translate_content(content, content_type):
+def _log_token_usage(response, log_fn):
+    """response.usage_metadata에서 토큰 수를 읽어 log_fn으로 출력한다."""
+    if log_fn is None:
+        return
+    try:
+        meta = response.usage_metadata
+        prompt_tok = meta.prompt_token_count
+        cand_tok = meta.candidates_token_count
+        cached_tok = getattr(meta, 'cached_content_token_count', 0) or 0
+        if cached_tok:
+            log_fn(f"  [토큰] 입력 {prompt_tok} (캐시 {cached_tok}) / 출력 {cand_tok}")
+        else:
+            log_fn(f"  [토큰] 입력 {prompt_tok} / 출력 {cand_tok}")
+    except Exception:
+        pass
+
+
+def translate_content(content, content_type, log_fn=None):
     """
     Sends content to Gemini for translation.
     content: str (text), PIL.Image (image), or list[list[str]] (pdf_table)
     content_type: 'text', 'image', 'pdf_image', or 'pdf_table'
+    log_fn: 선택적 로거 콜백. 전달 시 토큰 사용량을 출력한다.
     """
     global model
 
@@ -236,8 +286,9 @@ def translate_content(content, content_type):
                     return "(내용 주석: 공백 페이지 또는 텍스트 없음)"
                 
                 response = model.generate_content(content)
+                _log_token_usage(response, log_fn)
                 return response.text.strip()
-            
+
             elif content_type == 'image' or content_type == 'pdf_image':
                 # Apply the same logic for PDF images.
                 # If needed, we can prepend "(이미지)" programmatically here or in the prompts,
@@ -245,6 +296,7 @@ def translate_content(content, content_type):
                 try:
                     response = model.generate_content(content)
                     result = response.text.strip()
+                    _log_token_usage(response, log_fn)
                 except ValueError:
                     # Occurs when "The `response.text` quick accessor requires the response to contain a valid `Part`"
                     # This often happens if the model sees no text or refuses to translate (safety/finish_reason 1).

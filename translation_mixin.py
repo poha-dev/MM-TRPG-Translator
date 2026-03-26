@@ -18,31 +18,14 @@ from translator import translate_content, refine_content, configure_genai
 from korean_utils import apply_replacement
 
 # Pre-compiled regex patterns
-# <hl=...> must be listed first (outermost tag captures entire highlighted span)
 _RE_COLOR_TAG_SPLIT = re.compile(
-    r'(<hl=#[0-9a-fA-F]{6}>.*?</hl>|<c=#[0-9a-fA-F]{6}>.*?</c>|<b>.*?</b>)',
+    r'(<c=#[0-9a-fA-F]{6}>.*?</c>|<b>.*?</b>)',
     re.DOTALL
 )
 _RE_COLOR_TAG_STRIP = re.compile(
-    r'<c=#[0-9a-fA-F]{6}>|</c>|<b>|</b>|<hl=#[0-9a-fA-F]{6}>|</hl>'
+    r'<c=#[0-9a-fA-F]{6}>|</c>|<b>|</b>'
 )
 _RE_INVALID_FILENAME = re.compile(r'[\\/*?:"<>|]')
-
-
-def _apply_shd_to_run(run, hex_color: str):
-    """python-docx run 객체에 배경 음영(하이라이트)을 OOXML로 직접 적용한다.
-
-    python-docx의 고수준 API는 하이라이트 색상으로 제한된 프리셋만 지원하므로,
-    임의 RGB 지정이 가능한 w:shd 요소를 XML 수준에서 직접 삽입한다.
-    """
-    from docx.oxml.ns import qn
-    from docx.oxml import OxmlElement
-    rPr = run._r.get_or_add_rPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:val"), "clear")
-    shd.set(qn("w:color"), "auto")
-    shd.set(qn("w:fill"), hex_color.lstrip('#').upper())
-    rPr.insert(0, shd)
 
 
 class TranslationMixin:
@@ -286,6 +269,7 @@ class TranslationMixin:
         glossary = self.load_glossary_from_file(glossary_file)
 
         success, msg = configure_genai(api_key, model_name, glossary=glossary)
+        self.log(f"AI 초기화: {msg}")
         if not success:
             messagebox.showerror("Config Error", f"Failed to configure AI: {msg}\nPlease check Settings tab.")
             self.start_btn.config(state='normal')
@@ -498,57 +482,7 @@ class TranslationMixin:
                             if content_type == 'text' and isinstance(content, str):
                                 self.log(f"    ⏳ {len(content)}자 번역 중...")
 
-                            # --- PDF Table: separate handling ---
-                            if content_type == 'pdf_table':
-                                total_rows = len(content)
-                                self.log(f"  (테이블 번역 시작: {total_rows}행)")
-
-                                # Translate each non-empty cell individually with progress logging
-                                translated_table = []
-                                for r_idx, row in enumerate(content):
-                                    t_row = []
-                                    for cell in row:
-                                        cell_str = str(cell).strip() if cell is not None else ""
-                                        if cell_str:
-                                            t_row.append(translate_content(cell_str, 'text'))
-                                        else:
-                                            t_row.append("")
-                                    translated_table.append(t_row)
-                                    self.log(f"    행 {r_idx + 1}/{total_rows} 완료")
-
-                                # DOCX table
-                                if docx_doc is not None and translated_table:
-                                    rows = len(translated_table)
-                                    cols = max((len(r) for r in translated_table), default=1)
-                                    tbl = docx_doc.add_table(rows=rows, cols=cols)
-                                    tbl.style = 'Table Grid'
-                                    for r_idx, row in enumerate(translated_table):
-                                        for c_idx, cell_text in enumerate(row):
-                                            tbl.cell(r_idx, c_idx).text = str(cell_text) if cell_text else ""
-                                    docx_doc.add_paragraph()  # Spacing after table
-
-                                # HTML table
-                                html_rows = ""
-                                for r_idx, row in enumerate(translated_table):
-                                    tag = "th" if r_idx == 0 else "td"
-                                    cells = "".join(f"<{tag}>{str(c) if c else ''}</{tag}>" for c in row)
-                                    html_rows += f"<tr>{cells}</tr>"
-                                safe_header = header.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                                html_chunk = f"""
-        <div class="card">
-            <div class="card-header">{safe_header}</div>
-            <div class="card-content">
-                <table border="1" style="border-collapse:collapse;width:100%">{html_rows}</table>
-            </div>
-        </div>
-"""
-                                outfile.write(html_chunk)
-                                self.log(f"  (테이블 번역 완료: {total_rows}행)")
-                                stats["chunks"] += 1
-                                continue  # Skip rest of loop for tables
-                            # --- End PDF Table handling ---
-
-                            translated_text = translate_content(content, content_type)
+                            translated_text = translate_content(content, content_type, log_fn=self.log)
 
                             # Refine if enabled
                             refined_text_result = None
@@ -616,46 +550,6 @@ class TranslationMixin:
                                                 run.font.color.rgb = RGBColor(r, g, b)
                                             except Exception:
                                                 pass
-                                        elif part.startswith('<hl=') and part.endswith('</hl>'):
-                                            # Highlight tag — wrap inner runs with background shading
-                                            hl_hex = part[4:11]   # "#RRGGBB"
-                                            hl_inner = part[12:-5]  # content inside <hl=...>...</hl>
-                                            inner_parts = _RE_COLOR_TAG_SPLIT.split(hl_inner)
-                                            for ip in inner_parts:
-                                                if not ip:
-                                                    continue
-                                                if ip.startswith('<b>') and ip.endswith('</b>'):
-                                                    b_inner = ip[3:-4]
-                                                    if b_inner.startswith('<c=') and b_inner.endswith('</c>'):
-                                                        c_hex = b_inner[3:10].lower()
-                                                        t_text = b_inner[11:-4]
-                                                    else:
-                                                        c_hex = None
-                                                        t_text = b_inner
-                                                    hl_run = p.add_run(t_text)
-                                                    hl_run.bold = True
-                                                    if c_hex:
-                                                        try:
-                                                            from docx.shared import RGBColor
-                                                            r_, g_, b_ = int(c_hex[1:3],16), int(c_hex[3:5],16), int(c_hex[5:7],16)
-                                                            if not (r_>240 and g_>240 and b_>240):
-                                                                hl_run.font.color.rgb = RGBColor(r_, g_, b_)
-                                                        except Exception:
-                                                            pass
-                                                elif ip.startswith('<c=') and ip.endswith('</c>'):
-                                                    c_hex = ip[3:10].lower()
-                                                    t_text = ip[11:-4]
-                                                    hl_run = p.add_run(t_text)
-                                                    try:
-                                                        from docx.shared import RGBColor
-                                                        r_, g_, b_ = int(c_hex[1:3],16), int(c_hex[3:5],16), int(c_hex[5:7],16)
-                                                        if not (r_>240 and g_>240 and b_>240):
-                                                            hl_run.font.color.rgb = RGBColor(r_, g_, b_)
-                                                    except Exception:
-                                                        pass
-                                                else:
-                                                    hl_run = p.add_run(ip)
-                                                _apply_shd_to_run(hl_run, hl_hex)
                                         elif part:
                                             p.add_run(part)
 
@@ -795,7 +689,7 @@ class TranslationMixin:
 
                                 for header, content, content_type in get_file_content(filepath):
                                     self.log(f"  - Translating image: {header}")
-                                    translated_text = translate_content(content, content_type)
+                                    translated_text = translate_content(content, content_type, log_fn=self.log)
 
                                     # Apply Glossary
                                     for original, translated in glossary.items():
@@ -883,7 +777,7 @@ class TranslationMixin:
                 for header, content, content_type in chunks:
                     if content_type in ('pdf_image', 'pdf_image_embed', 'image'):
                         continue  # Skip images in quick preview
-                    translated = translate_content(content, content_type)
+                    translated = translate_content(content, content_type, log_fn=self.log)
                     result_parts.append(f"=== {header} ===\n{translated}")
             except Exception as e:
                 result_parts.append(f"[오류] {str(e)}")

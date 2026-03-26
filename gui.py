@@ -93,8 +93,8 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
         self.docx_remove_headers = tk.BooleanVar(value=False)
         self.auto_apply_glossary = tk.BooleanVar(value=True)
         self.resume_enabled = tk.BooleanVar(value=False)
-        self.auto_open_output = tk.BooleanVar(value=False)
-        self.save_log_enabled = tk.BooleanVar(value=True)
+        self.auto_open_output = tk.BooleanVar(value=self.settings.get("auto_open_output", False))
+        self.save_log_enabled = tk.BooleanVar(value=self.settings.get("save_log_enabled", True))
 
         # Ccfolia Vars
         self.ccfolia_src_dir = tk.StringVar(value=self.settings.get("ccfolia_src_dir", ""))
@@ -104,6 +104,8 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
         self.ccfolia_make_zip = tk.BooleanVar(value=self.settings.get("ccfolia_make_zip", True))
         self.ccfolia_api_match = tk.BooleanVar(value=self.settings.get("ccfolia_api_match", False))
         self.ccfolia_api_match_model = tk.StringVar(value=self.settings.get("ccfolia_api_match_model", "gemini-3.1-flash-lite-preview"))
+        self.ccfolia_translate_memo = tk.BooleanVar(value=self.settings.get("ccfolia_translate_memo", False))
+        self.ccfolia_glossary_file = tk.StringVar(value=self.settings.get("ccfolia_glossary_file", ""))
 
         # Image Cleaner Vars (v0.5)
         self.ic_api_key = tk.StringVar(value=self.settings.get("image_cleaner_api_key", ""))
@@ -527,7 +529,9 @@ v0.3:
             image_cleaner_api_key=self.ic_api_key.get().strip(),
             image_cleaner_model_name=self.ic_model_name.get().strip(),
             image_cleaner_prompt=self.ic_prompt.get(),
-            image_cleaner_alpha_enabled=self.ic_alpha_enabled.get()
+            image_cleaner_alpha_enabled=self.ic_alpha_enabled.get(),
+            auto_open_output=self.auto_open_output.get(),
+            save_log_enabled=self.save_log_enabled.get(),
         ):
             # Re-configure runtime
             configure_genai(
@@ -606,26 +610,29 @@ v0.3:
                     else:
                         msg = "번역 완료!"
                     # Auto-open output folder
-                    if hasattr(self, 'auto_open_output') and self.auto_open_output.get():
-                        out_path = self.output_dir.get()
-                        if out_path and os.path.exists(out_path):
-                            os.startfile(out_path)
+                    try:
+                        if hasattr(self, 'auto_open_output') and self.auto_open_output.get():
+                            out_path = self.output_dir.get()
+                            if out_path and os.path.exists(out_path):
+                                os.startfile(out_path)
+                    except Exception:
+                        pass
                     # Save log file
-                    if hasattr(self, 'save_log_enabled') and self.save_log_enabled.get():
-                        import datetime
-                        log_content = self.log_area.get("1.0", tk.END)
-                        out_path = self.output_dir.get()
-                        if out_path and os.path.exists(out_path):
-                            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                            log_path = os.path.join(out_path, f"translation_log_{ts}.txt")
-                            try:
+                    try:
+                        if hasattr(self, 'save_log_enabled') and self.save_log_enabled.get():
+                            import datetime
+                            log_content = self.log_area.get("1.0", tk.END)
+                            out_path = self.output_dir.get()
+                            if out_path and os.path.exists(out_path):
+                                ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                                log_path = os.path.join(out_path, f"translation_log_{ts}.txt")
                                 with open(log_path, "w", encoding="utf-8") as lf:
                                     lf.write(log_content)
                                 self.log_area.config(state='normal')
                                 self.log_area.insert(tk.END, f"로그 저장됨: {os.path.basename(log_path)}\n")
                                 self.log_area.config(state='disabled')
-                            except Exception:
-                                pass
+                    except Exception:
+                        pass
                     messagebox.showinfo("완료", msg)
                 elif msg_type == "preview_result":
                     fname, result_text = data
