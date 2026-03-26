@@ -441,10 +441,9 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
         return """
 v0.75 (Current):
 - Gemini Context Caching 적용: 시스템 프롬프트를 캐시에 올려 반복 과금 절감 (캐시 토큰 약 25% 과금)
-- 캐시 자동 복구: 번역 중 캐시 만료 시 최대 3회 자동 재생성 후 이어서 진행
 - 토큰 사용량 로그: 청크마다 입력/캐시/출력 토큰 수 실시간 표시
 - CCFolia 메모 번역: 룸 셋팅 탭에서 __data.json의 memo 필드 자동 번역
-- 기본 모델 변경: gemini-3.1-flash-lite-preview (동일 품질, 약 50% 저렴)
+- 이미지 이중 번역 버그 수정: 이미지 파일이 DOCX용/HTML 합본용으로 두 번 번역되던 문제 해결
 - 테이블/하이라이트 기능 제거 (오류 유발 요소 정리)
 - 번역 실패 시 불완전한 출력 파일 자동 삭제 (건너뛰기 기능 오인 방지)
 
