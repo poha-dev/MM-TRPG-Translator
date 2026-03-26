@@ -39,7 +39,7 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
 
     def __init__(self, root):
         self.root = root
-        self.root.title("Japanese TRPG/Murder Mystery Translator v0.7")
+        self.root.title("Japanese TRPG/Murder Mystery Translator v0.75")
         self.root.geometry("800x650")  # Slightly taller for settings/credits
 
         # Set Window Icon
@@ -439,7 +439,16 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
 
     def get_version_history(self):
         return """
-v0.7 (Current):
+v0.75 (Current):
+- Gemini Context Caching 적용: 시스템 프롬프트를 캐시에 올려 반복 과금 절감 (캐시 토큰 약 25% 과금)
+- 캐시 자동 복구: 번역 중 캐시 만료 시 최대 3회 자동 재생성 후 이어서 진행
+- 토큰 사용량 로그: 청크마다 입력/캐시/출력 토큰 수 실시간 표시
+- CCFolia 메모 번역: 룸 셋팅 탭에서 __data.json의 memo 필드 자동 번역
+- 기본 모델 변경: gemini-3.1-flash-lite-preview (동일 품질, 약 50% 저렴)
+- 테이블/하이라이트 기능 제거 (오류 유발 요소 정리)
+- 번역 실패 시 불완전한 출력 파일 자동 삭제 (건너뛰기 기능 오인 방지)
+
+v0.7:
 - 코코포리아 이미지 교체: ccfolia 룸 폴더의 이미지를 번역본으로 교체 (수동 매핑 / 파일명 자동 매칭)
 - 매핑 저장/불러오기: 이미지 매핑 설정을 JSON 파일로 저장하여 재사용 가능
 - 자동 매칭 확인 다이얼로그: 매칭된 이미지 쌍을 시각적으로 확인 후 교체 진행
