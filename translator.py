@@ -19,6 +19,10 @@ image_cleaner_model = None
 # 컨텍스트 캐시 인스턴스 — 번역 시작 시 생성, 다음 번역 전 교체된다.
 _cached_content = None
 
+# 캐시 만료 시 일반 모드로 자동 복구하기 위한 설정 저장용
+_last_model_name = None
+_last_system_prompt = None
+
 
 def _cleanup_cache():
     """기존 컨텍스트 캐시를 삭제한다. 실패해도 무시한다."""
@@ -39,7 +43,7 @@ def configure_genai(api_key, model_name, glossary=None, cleaner_api_key=None, cl
     모든 안전 필터는 TRPG 시나리오 번역 특성상 BLOCK_NONE으로 설정한다.
     반환값: (success: bool, message: str)
     """
-    global model, refine_model, image_cleaner_model, _cached_content
+    global model, refine_model, image_cleaner_model, _cached_content, _last_model_name, _last_system_prompt
 
     if not api_key:
         return False, "API Key is missing."
@@ -52,6 +56,10 @@ def configure_genai(api_key, model_name, glossary=None, cleaner_api_key=None, cl
 
         # 기존 캐시 정리 (새 번역 세션 시작마다 갱신)
         _cleanup_cache()
+
+        # 캐시 만료 자동 복구용으로 설정값 저장
+        _last_model_name = model_name
+        _last_system_prompt = prompts["system_prompt"]
 
         _SAFETY = {
             'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
@@ -270,7 +278,7 @@ def translate_content(content, content_type, log_fn=None):
     content_type: 'text', 'image', 'pdf_image', or 'pdf_table'
     log_fn: 선택적 로거 콜백. 전달 시 토큰 사용량을 출력한다.
     """
-    global model
+    global model, _cached_content
 
     if content_type == 'text':
         # Apply full-width to half-width character normalization before translation
@@ -317,6 +325,52 @@ def translate_content(content, content_type, log_fn=None):
             elif "500" in error_str or "Internal error" in error_str or "504" in error_str or "Deadline Exceeded" in error_str: # Server error / Timeout
                 print(f"Server error or Timeout (50x). Retrying in {retry_delay}s... (Attempt {attempt+1}/{max_retries})")
                 time.sleep(retry_delay)
+            elif "403" in error_str and "CachedContent" in error_str:
+                # 캐시 만료 → 최대 3회 재생성 시도
+                _cleanup_cache()
+                if not (_last_model_name and _last_system_prompt):
+                    return f"번역 중 오류 발생: {str(e)}"
+
+                _GEN_CFG = genai.types.GenerationConfig(temperature=0.0)
+                _SAFETY = {
+                    'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
+                    'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
+                    'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+                    'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE',
+                }
+                cache_recreated = False
+                for cache_try in range(3):
+                    try:
+                        from google.generativeai import caching as _gc
+                        cache_model = _last_model_name if _last_model_name.startswith("models/") else f"models/{_last_model_name}"
+                        _cached_content = _gc.CachedContent.create(
+                            model=cache_model,
+                            display_name="trpg_translation_system_prompt",
+                            system_instruction=_last_system_prompt,
+                            ttl=datetime.timedelta(hours=2),
+                        )
+                        model = genai.GenerativeModel.from_cached_content(
+                            cached_content=_cached_content,
+                            generation_config=_GEN_CFG,
+                            safety_settings=_SAFETY,
+                        )
+                        if log_fn:
+                            log_fn(f"  ⚠️ 캐시 만료 → 재생성 완료 ({cache_try+1}회 시도), 이어서 진행합니다.")
+                        cache_recreated = True
+                        break
+                    except Exception as cache_err:
+                        if cache_try < 2:
+                            if log_fn:
+                                log_fn(f"  ⚠️ 캐시 재생성 시도 {cache_try+1}/3 실패, 10초 후 재시도...")
+                            time.sleep(10)
+                        else:
+                            if log_fn:
+                                log_fn(f"  ❌ 캐시 재생성 3회 모두 실패. 번역을 중단합니다.")
+                                log_fn(f"     앱을 재시작하면 중단된 파일부터 다시 번역할 수 있습니다.")
+                            return "번역 중 오류 발생: 캐시 만료 후 재생성 3회 실패 — 앱을 재시작해주세요."
+                if not cache_recreated:
+                    return f"번역 중 오류 발생: {str(e)}"
+                # 캐시 재생성 성공 → 재시도 (sleep 없이 바로)
             else:
                 return f"번역 중 오류 발생: {str(e)}"
 

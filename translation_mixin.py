@@ -366,11 +366,8 @@ class TranslationMixin:
                 # Check for Image (Direct Image File)
                 ext = str(os.path.splitext(filepath)[1]).lower()
                 if ext in ['.png', '.jpg', '.jpeg', '.webp']:
-                    # User request: Move individual image HTMLs to a subfolder to avoid clutter
-                    img_html_dir = os.path.join(current_output_dir, "individual_images")
-                    if not os.path.exists(img_html_dir):
-                        os.makedirs(img_html_dir)
-                    output_path = os.path.join(img_html_dir, output_filename)
+                    # 이미지 파일은 Section 2(이미지 합본)에서 전담 처리 — 여기서는 건너뜀
+                    continue
                 else:
                     # Text/PDF files go to main output dir
                     output_path = os.path.join(current_output_dir, output_filename)
@@ -483,6 +480,14 @@ class TranslationMixin:
                                 self.log(f"    ⏳ {len(content)}자 번역 중...")
 
                             translated_text = translate_content(content, content_type, log_fn=self.log)
+
+                            # 번역 오류 시 출력 파일 삭제 후 중단 (건너뛰기가 오인하지 않도록)
+                            if isinstance(translated_text, str) and (
+                                translated_text.startswith("번역 중 오류 발생:") or
+                                translated_text.startswith("번역 실패:")
+                            ):
+                                self.log(f"  ❌ 번역 오류로 중단: {translated_text}")
+                                raise Exception(translated_text)
 
                             # Refine if enabled
                             refined_text_result = None
@@ -619,6 +624,13 @@ class TranslationMixin:
                     import traceback
                     traceback.print_exc()
                     stats["errors"] += 1
+                    # 불완전한 출력 파일 삭제 — 건너뛰기 기능이 오인하지 않도록
+                    try:
+                        if 'output_path' in locals() and os.path.exists(output_path):
+                            os.remove(output_path)
+                            self.log(f"  (불완전한 출력 파일 삭제됨: {os.path.basename(output_path)})")
+                    except Exception:
+                        pass
 
             # 2. Process Image Files (Combined HTML)
             if image_files:

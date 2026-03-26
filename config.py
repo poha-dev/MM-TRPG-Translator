@@ -14,7 +14,7 @@ SETTINGS_FILE = "settings.json"
 PROMPTS_FILE = "prompts.json"
 RULES_FILE = "prompt.txt"
 
-DEFAULT_MODEL = "gemini-3-flash-preview"
+DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
 DEFAULT_IMAGE_CLEANER_MODEL = "gemini-3-pro-image-preview"
 DEFAULT_IMAGE_CLEANER_PROMPT = "캐릭터나 그림은 유지하고 글자만 자연스럽게 지워줘"
 
@@ -26,7 +26,6 @@ DEFAULT_TRANSLATION_RULES = """1. 직독직해 하지 말고 한국인이 봤을
 5. 문장 기호는 사용하되, 한자 병기와 강조 기호(**)는 절대 사용하지 않는다.
 6. 원본(텍스트의 <c> 태그나 이미지의 실제 글씨)에 검정색이 아닌 특정 색상의 글씨가 있다면, 번역 시 해당 부분을 반드시 <c=#HEX코드>번역된 텍스트</c> 형태로 감싸서 출력해. (예: 붉은색 글씨는 <c=#ff0000>위험</c>)
 7. 입력 텍스트에 <b>...</b> 태그가 있으면 번역 후에도 반드시 해당 태그를 그대로 유지해. (예: <b>굵은 글씨</b>)
-8. 입력 텍스트에 <hl=#RRGGBB>...</hl> 형광펜 하이라이트 태그가 있으면, 번역 후에도 반드시 해당 태그를 원문과 같은 위치에 그대로 유지해. (예: <hl=#ffff00>중요한 내용</hl>)
 """
 
 DEFAULT_SYSTEM_PROMPT = f"""
@@ -156,11 +155,18 @@ def update_system_prompt(base_rules, glossary=None):
 
     # 색상 태그 규칙이 없으면 추가 — 이미지 번역 시 색상 복원에 필요
     if "<c=" not in rules:
-        rules += "\n6. 원본(텍스트의 <c> 태그나 이미지의 실제 글씨)에 검정색이 아닌 특정 색상의 글씨가 있다면, 번역 시 해당 부분을 반드시 <c=#HEX코드>번역된 텍스트</c> 형태로 감싸서 출력해. (예: 붉은색 글씨는 <c=#ff0000>위험</c>)\n"
+        # 현재 마지막 규칙 번호 파악 후 다음 번호로 추가
+        import re as _re
+        nums = [int(m) for m in _re.findall(r'^\d+', rules, flags=_re.MULTILINE)]
+        next_num = (max(nums) + 1) if nums else 6
+        rules += f"\n{next_num}. 원본(텍스트의 <c> 태그나 이미지의 실제 글씨)에 검정색이 아닌 특정 색상의 글씨가 있다면, 번역 시 해당 부분을 반드시 <c=#HEX코드>번역된 텍스트</c> 형태로 감싸서 출력해. (예: 붉은색 글씨는 <c=#ff0000>위험</c>)\n"
 
     # 동일 표현 일관성 규칙이 없으면 추가 — 번역 결과의 용어 통일을 강제
     if "문맥" not in rules and "일관성" not in rules:
-        rules += "7. 문장 구조 일관성 강화: 동일하거나 유사한 형태의 문장 구조, 혹은 특정 속성 명칭(비닉, 은닉, 비밀 등)이 문서 내 반복되어 등장할 경우, 절대로 상황에 따라 다르게 의역하거나 유의어로 대체하지 말고 이전 번역과 토씨 하나 틀리지 않고 100% 똑같은 단어와 구조로 번역해.\n"
+        import re as _re
+        nums = [int(m) for m in _re.findall(r'^\d+', rules, flags=_re.MULTILINE)]
+        next_num = (max(nums) + 1) if nums else 8
+        rules += f"{next_num}. 문장 구조 일관성 강화: 동일하거나 유사한 형태의 문장 구조, 혹은 특정 속성 명칭(비닉, 은닉, 비밀 등)이 문서 내 반복되어 등장할 경우, 절대로 상황에 따라 다르게 의역하거나 유의어로 대체하지 말고 이전 번역과 토씨 하나 틀리지 않고 100% 똑같은 단어와 구조로 번역해.\n"
 
     # Inject Glossary Terms
     if glossary and len(glossary) > 0:
