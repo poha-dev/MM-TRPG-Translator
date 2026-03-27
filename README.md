@@ -54,6 +54,29 @@ cp settings.json.example settings.json
 python main.py
 ```
 
+## 💖 Sponsors
+
+이 프로젝트는 후원자분들의 지원으로 운영됩니다. 진심으로 감사드립니다.
+
+<table>
+  <tr>
+    <th align="center">Sponsor</th>
+    <th align="center">Description</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="http://yeokka.com/">
+        <b>여까</b>
+      </a>
+    </td>
+    <td align="center">⭐ Project Sponsor</td>
+  </tr>
+</table>
+
+> 후원을 원하신다면 ☕ [Buy Me a Coffee](https://buymeacoffee.com/poha) 를 통해 지원해주세요!
+
+---
+
 ## 🛠 제작 및 문의
 
 - **제작자**: 포하
