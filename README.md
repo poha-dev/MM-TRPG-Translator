@@ -1,6 +1,6 @@
-# TRPG / Murder Mystery Translator (v0.7)
+# TRPG / Murder Mystery Translator (v0.75)
 
-![Version](https://img.shields.io/badge/version-v0.7-blue)
+![Version](https://img.shields.io/badge/version-v0.75-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-yellow)](https://buymeacoffee.com/poha)
@@ -14,10 +14,10 @@
 |---|---|
 | **1차 번역** | PDF·TXT·이미지 파일을 Gemini AI로 한국어 번역. 용어집(고유명사 사전) 자동 추출·적용 |
 | **2차 교정** | 번역 결과물을 AI가 재검토하여 자연스러운 한국어로 다듬기 |
-| **DOCX 서식 보존** | 워드 출력 시 원본의 **글자 색상·볼드·하이라이트** 서식 보존 |
+| **DOCX 서식 보존** | 워드 출력 시 원본의 **글자 색상·볼드** 서식 보존 |
 | **PDF 이미지 추출** | PDF에 포함된 이미지를 원본 해상도 그대로 파일로 내보내기 |
 | **이미지 글자 제거** *(beta)* | 배경을 보존하면서 이미지 내 일어/영문 텍스트만 제거 |
-| **코코포리아 룸 셋팅** | 룸 ZIP 이미지를 번역본으로 교체하고 `__data.json` 해시 참조 자동 업데이트 |
+| **ccfolia 룸 셋팅** | 룸 ZIP 이미지를 번역본으로 교체하고 `__data.json` 해시 참조 자동 업데이트 |
 
 ## 📸 스크린샷
 
@@ -26,11 +26,11 @@
 
 ## 🚀 시작하기
 
-1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.7.exe`)을 다운로드합니다.
+1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.75.exe`)을 다운로드합니다.
 2. 프로그램을 실행하고 **설정/정보** 탭에서 [Google Gemini API Key](https://aistudio.google.com/app/apikey)를 입력합니다.
 3. 원하는 탭(1차 번역, 2차 교정, 이미지 글자 제거, 코코포리아 룸 셋팅)을 선택하여 작업을 시작하세요.
 
-> **기본 모델**: `gemini-3-flash-preview`
+> **기본 모델**: `gemini-3.1-flash-lite-preview`
 > 다른 모델은 [Google AI 공식 문서](https://ai.google.dev/gemini-api/docs/models?hl=ko)에서 확인하세요.
 
 ## 📖 사용 설명서
@@ -73,7 +73,6 @@ python main.py
   </tr>
 </table>
 
-> 후원을 원하신다면 ☕ [Buy Me a Coffee](https://buymeacoffee.com/poha) 를 통해 지원해주세요!
 
 ---
 
@@ -81,13 +80,12 @@ python main.py
 
 - **제작자**: 포하
 - **이메일**: kapoha.dev@gmail.com
-- **커뮤니티**: [팬비닛 (치지직)](https://fanbinit.us/)
 - **후원**: [Buy Me a Coffee ☕](https://buymeacoffee.com/poha)
 
 ## ⚠️ 저작권 주의사항 (Copyright Warning)
 
 - 본 프로그램은 번역 및 이미지 처리를 돕는 **자동화 도구**입니다.
-- 번역 대상이 되는 시나리오, 텍스트, 이미지의 저작권은 **원작자(라이선스 보유자)**에게 있습니다.
+- 번역 대상이 되는 시나리오, 텍스트, 이미지의 저작권은 원작자(라이선스 보유자)에게 있습니다.
 - 사용자는 해당 저작물을 번역하고 배포함에 있어 저작권법을 준수해야 하며, 이를 위배하여 발생하는 모든 법적 책임은 **사용자 본인**에게 있습니다.
 - 원작자의 허가 없는 상업적 이용이나 무단 배포는 금지됩니다.
 
