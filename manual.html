@@ -343,13 +343,40 @@
             배경·카드·마커 등 모든 참조가 자동으로 업데이트됩니다.
         </div>
 
+        <h3>스크린/마커 패널 설명(memo) 번역 <span class="badge badge-green">New v0.75</span></h3>
+        <p>
+            ccfolia의 스크린 패널·마커 패널에는 마우스를 올렸을 때 나타나는 <strong>툴팁 설명(memo)</strong> 필드가 있습니다.
+            원본 룸 데이터가 일본어로 제작된 경우, 이 설명도 일본어로 되어 있어 사용 시 불편할 수 있습니다.
+        </p>
+        <p>
+            이 기능을 사용하면 <code>__data.json</code> 안의 모든 <code>memo</code> 필드를 자동으로 번역해 저장합니다.
+        </p>
+
+        <h4 style="margin-top: 16px; color: #444;">사용 방법</h4>
+        <ol>
+            <li><strong>설정 탭</strong>에서 API Key와 모델이 입력된 상태여야 합니다.</li>
+            <li><strong>코코포리아 룸 셋팅 탭</strong>의 <em>원본 폴더</em>에 룸 폴더 경로를 설정합니다.</li>
+            <li><strong>memo 필드 번역</strong> 체크박스를 켭니다.</li>
+            <li>(선택) 번역 시 적용할 <strong>용어집 파일</strong>을 지정하면 고유명사를 일관되게 번역합니다.</li>
+            <li>교체 작업을 실행하면 이미지 교체와 함께 memo 번역이 자동으로 진행됩니다.</li>
+        </ol>
+
+        <div class="note">
+            <strong>※ 동작 방식:</strong>
+            <ul style="margin: 6px 0 0 0;">
+                <li>중복된 memo 값은 한 번만 번역해 재사용하므로 API 호출 횟수가 최소화됩니다.</li>
+                <li>일본어 문자가 포함되지 않은 memo(영문·숫자 등)는 번역을 건너뜁니다.</li>
+                <li>번역 중 오류가 발생하면 해당 시점까지 번역된 내용만 저장되고 작업이 중단됩니다.</li>
+            </ul>
+        </div>
+
         <hr>
 
         <div class="tip">
             <strong>Tip:</strong> 결과물(<code>output</code> 폴더)은 웹브라우저나 워드 프로세서로 열어 확인할 수 있습니다.
         </div>
 
-        <p style="text-align: center; color: #888; margin-top: 50px;">제작자 : 포하 (v0.7)</p>
+        <p style="text-align: center; color: #888; margin-top: 50px;">제작자 : 포하 (v0.75)</p>
     </div>
 </body>
 
