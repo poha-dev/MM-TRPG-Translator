@@ -6,7 +6,7 @@
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-yellow)](https://buymeacoffee.com/poha)
 
 일본어 TRPG 시나리오 및 머더 미스터리 텍스트를 한국어로 자연스럽게 번역·교정하고,
-코코포리아(CoCoFolio) 룸 이미지를 번역본으로 교체하는 통합 도구입니다. Google Gemini AI를 활용합니다.
+코코포리아(ccfolia) 룸 이미지를 번역본으로 교체하는 통합 도구입니다. Google Gemini AI를 활용합니다.
 
 ## ✨ 주요 기능
 
@@ -69,7 +69,7 @@ python main.py
         <b>여까</b>
       </a>
     </td>
-    <td align="center">⭐ Project Sponsor</td>
+    <td align="center">Project Sponsor</td>
   </tr>
 </table>
 
@@ -96,7 +96,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 - ✅ 자유롭게 사용, 수정, 배포 가능
 - ✅ 수정 시 동일 라이선스(GPL-3.0) 적용 필수
 - ✅ 소스 코드 공개 의무
-- ✅ 배포 또는 공개 시 원작자(**포하**, poha-dev) 표기 필수
+- ✅ 배포 또는 공개 시 원작자(**포하**, poha) 표기 필수
 
 Copyright (c) 2026 포하
 
