@@ -1,6 +1,6 @@
-# TRPG / Murder Mystery Translator (v0.75)
+# TRPG / Murder Mystery Translator (v0.76)
 
-![Version](https://img.shields.io/badge/version-v0.75-blue)
+![Version](https://img.shields.io/badge/version-v0.76-blue)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-포하-yellow)](https://buymeacoffee.com/poha)
@@ -26,7 +26,7 @@
 
 ## 🚀 시작하기
 
-1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.75.exe`)을 다운로드합니다.
+1. **[Releases](https://github.com/poha-dev/MM-TRPG-Translator/releases)** 탭에서 최신 버전의 실행 파일(`MM_TRPG_Translator_v0.76.exe`)을 다운로드합니다.
 2. 프로그램을 실행하고 **설정/정보** 탭에서 [Google Gemini API Key](https://aistudio.google.com/app/apikey)를 입력합니다.
 3. 원하는 탭(1차 번역, 2차 교정, 이미지 글자 제거, 코코포리아 룸 셋팅)을 선택하여 작업을 시작하세요.
 

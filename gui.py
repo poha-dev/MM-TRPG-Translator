@@ -39,8 +39,8 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
 
     def __init__(self, root):
         self.root = root
-        self.root.title("Japanese TRPG/Murder Mystery Translator v0.75")
-        self.root.geometry("800x650")  # Slightly taller for settings/credits
+        self.root.title("Japanese TRPG/Murder Mystery Translator v0.76")
+        self.root.geometry("800x800")
 
         # Set Window Icon
         try:
@@ -439,7 +439,13 @@ class TRPGTranslatorApp(TranslationMixin, ImageMixin, CorrectionMixin, CcfoliaMi
 
     def get_version_history(self):
         return """
-v0.75 (Current):
+v0.76 (Current):
+- PDF 줄바꿈 개선: PDF 레이아웃에 의한 단어 중간 줄바꿈을 번역 전 자동으로 이어붙임
+- 고유명사 추출 글자 수 제한 제거: 이전 30,000자 상한 제거, 폴더 내 전체 파일 분석
+- 이미지 추출 폴더 정리: 추출된 이미지를 extracted_images_gallery 폴더 하나로 통합
+- PDF 이미지 알파 채널(투명도) 보존: SMask 합성으로 투명 PNG 정상 추출
+
+v0.75:
 - Gemini Context Caching 적용: 시스템 프롬프트를 캐시에 올려 반복 과금 절감 (캐시 토큰 약 25% 과금)
 - 토큰 사용량 로그: 청크마다 입력/캐시/출력 토큰 수 실시간 표시
 - CCFolia 메모 번역: 룸 셋팅 탭에서 __data.json의 memo 필드 자동 번역

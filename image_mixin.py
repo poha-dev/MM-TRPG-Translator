@@ -50,10 +50,13 @@ class ImageMixin:
     def run_extract_pdf_images(self, pdf_files, output_dir):
         """백그라운드 스레드에서 실행: PDF별로 이미지를 추출하고 완료 후 HTML 갤러리를 브라우저로 연다."""
         try:
+            gallery_dir = os.path.join(output_dir, "extracted_images_gallery")
+            os.makedirs(gallery_dir, exist_ok=True)
+
             all_saved = []
             for filepath in pdf_files:
                 base_name = os.path.splitext(os.path.basename(filepath))[0]
-                img_dir = os.path.join(output_dir, f"{base_name}_images")
+                img_dir = os.path.join(gallery_dir, f"{base_name}_images")
                 self.log(f"이미지 추출 중: {os.path.basename(filepath)}")
                 saved = extract_pdf_images_raw(filepath, img_dir)
                 all_saved.extend(saved)
@@ -62,8 +65,8 @@ class ImageMixin:
             if not all_saved:
                 self.log("추출된 이미지가 없습니다.")
             else:
-                gallery_path = os.path.join(output_dir, "extracted_images_gallery.html")
-                self._build_image_gallery_html(all_saved, gallery_path, output_dir)
+                gallery_path = os.path.join(gallery_dir, "index.html")
+                self._build_image_gallery_html(all_saved, gallery_path, gallery_dir)
                 self.log(f"HTML 갤러리 생성 완료: {gallery_path}")
                 webbrowser.open(f"file:///{gallery_path.replace(os.sep, '/')}")
 

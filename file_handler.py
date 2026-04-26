@@ -14,6 +14,38 @@ import re
 # Pre-compiled patterns
 _COLOR_TAG_PATTERN = re.compile(r'<c=#[0-9a-fA-F]{6}>|</c>|<b>|</b>')
 
+# 문장 종결 부호: 이 문자로 끝나는 줄은 진짜 줄바꿈으로 유지
+_SENTENCE_ENDERS = frozenset('。！？.!?」』')
+
+def _join_wrapped_lines(text: str) -> str:
+    """PDF 레이아웃에 의한 단어 중간 줄바꿈을 이어붙인다.
+
+    종결 부호(。！？ 등)로 끝나지 않는 줄은 다음 줄과 합쳐
+    'ソフ\\nト' → 'ソフト' 처럼 처리한다. 빈 줄(단락 구분)은 유지한다.
+    색상 태그(<c=>, <b> 등)가 포함된 경우도 태그를 제거한 순수 텍스트로 판단한다.
+    """
+    lines = text.split('\n')
+    merged = []
+    for line in lines:
+        if not merged:
+            merged.append(line)
+            continue
+        prev_stripped = merged[-1].rstrip()
+        cur_stripped = line.strip()
+        # 어느 한쪽이 빈 줄이면 단락 구분 → 그대로 추가
+        if not prev_stripped or not cur_stripped:
+            merged.append(line)
+            continue
+        # 색상 태그를 제거한 순수 텍스트로 마지막 문자 확인
+        raw_prev = _COLOR_TAG_PATTERN.sub('', prev_stripped)
+        last_char = raw_prev[-1] if raw_prev else ''
+        if last_char not in _SENTENCE_ENDERS:
+            # 단어 중간 줄바꿈 → 이어붙임
+            merged[-1] = prev_stripped + cur_stripped
+        else:
+            merged.append(line)
+    return '\n'.join(merged)
+
 def scan_pdf_images(filepath):
     """
     Scans a PDF and returns a list of dictionaries with image metadata/content.
@@ -159,7 +191,10 @@ def get_file_content(filepath, allowed_image_ids=None, extract_color=False, embe
                             text += "\n"
                 else:
                     text = page.get_text()
-                
+
+                # PDF 레이아웃 줄바꿈 제거: 단어 중간에서 잘린 줄을 이어붙인다 (ソフ\nト → ソフト)
+                text = _join_wrapped_lines(text)
+
                 # 문장 이어붙이기: 페이지가 문장 중간에서 끊기는 경우를 처리한다.
                 # 종결 부호로 끝나지 않으면 다음 페이지와 합산해 하나의 청크로 yield한다.
                 if text.strip():

@@ -89,13 +89,8 @@ class TranslationMixin:
         try:
             self.log(f"Collecting text from {len(text_files)} files for Glossary Extraction...")
 
-            # API 토큰 소비 제한: ~30,000자 ≈ 7,500토큰으로 주요 고유명사 추출에 충분
-            MAX_GLOSSARY_INPUT = 30000
             combined_text = ""
-            limit_reached = False
             for i, filepath in enumerate(text_files):
-                if limit_reached:
-                    break
                 self.update_progress(i, len(text_files), f"Reading: {os.path.basename(filepath)}")
 
                 try:
@@ -106,20 +101,11 @@ class TranslationMixin:
                                 page_text = page.extract_text()
                                 if page_text:
                                     combined_text += page_text + "\n"
-                                if len(combined_text) >= MAX_GLOSSARY_INPUT:
-                                    limit_reached = True
-                                    break
                     else:
                         with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
                             combined_text += f.read() + "\n"
-                        if len(combined_text) >= MAX_GLOSSARY_INPUT:
-                            limit_reached = True
                 except Exception as e:
                     self.log(f"Error reading {filepath}: {e}")
-
-            if limit_reached:
-                combined_text = combined_text[:MAX_GLOSSARY_INPUT]
-                self.log(f"(입력 크기 제한 {MAX_GLOSSARY_INPUT:,}자 도달. 일부 파일은 제외됨)")
 
             if not combined_text.strip():
                 self.msg_queue.put(("error", "추출할 텍스트 내용이 없습니다."))
