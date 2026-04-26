@@ -78,6 +78,19 @@ def extract_pdf_images_raw(filepath, output_dir):
                     width = base_image.get("width", 0)
                     height = base_image.get("height", 0)
 
+                    # SMask(alpha 채널) 합성: img_info[1]이 0이 아니면 투명도 정보 존재
+                    smask_xref = img_info[1]
+                    if smask_xref:
+                        smask = doc.extract_image(smask_xref)
+                        img_rgb = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
+                        alpha = Image.open(io.BytesIO(smask["image"])).convert("L")
+                        img_rgba = img_rgb.convert("RGBA")
+                        img_rgba.putalpha(alpha)
+                        ext = "png"
+                        buf = io.BytesIO()
+                        img_rgba.save(buf, format="PNG")
+                        raw_bytes = buf.getvalue()
+
                     filename = f"p{i+1:03d}_{img_index+1:02d}.{ext}"
                     out_path = os.path.join(output_dir, filename)
                     with open(out_path, "wb") as f:
